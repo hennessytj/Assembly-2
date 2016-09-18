@@ -1,0 +1,61 @@
+%include "asm_io.inc"
+segment .data
+        ; initialized data section
+        output db "Welcome!",0
+        string1 db "greater than",0
+        string2 db "less than",0
+        string3 db "equal to",0
+        var_a dd 0Ah
+
+segment .bss
+        ; unitialized/reserved data section
+segment .text
+        global  asm_main
+asm_main:   ; asm_main is an external label
+        enter   0,0               ; setup routine
+        pusha
+	;***************CODE STARTS HERE***************************
+
+        mov eax, output         ; eax contains pointer to "Welcome!"
+        call print_string       ; prints string pointed at in eax
+        call print_nl           ; prints \n
+
+        cmp dword[var_a], 0Ah   ; cmp 0Ah at the double word starting
+                                ; at the address of var_a
+        jle label1              ; if var_a <= 0A goto label1
+        mov eax, string1        ; store pointer to string in eax
+        call print_string       
+        call print_nl
+        jmp label3              ; unconditional jump to label3
+label1:
+        cmp dword[var_a], 9h    ; compare var_a to 9h
+        jg label2               ; if var_a > 9h goto label2
+        mov eax, string2        ; else ...
+        call print_string
+        call print_nl
+        jmp label3              ; unconditional branch, goto label3
+label2:
+        mov eax, string3
+        call print_string
+        call print_nl
+label3:
+
+        cmp dword [var_a], 0    ; compare double word starting at var_a
+                                ; to value 0
+        jle label4              ; if var_a <= 0 goto label4
+
+        sar [var_a], 1          ; shift arithmetic right the value stored
+                                ; in var_a by 1 bit
+        mov eax, dword [var_a]  ; move a double word (4 bytes/32 bits)
+                                ; stored in var_a into eax
+        call print_int
+        call print_nl
+        jmp label3              ; unconditional branch to label3 
+
+label4:
+
+	;***************CODE ENDS HERE*****************************
+        popa
+        mov     eax, 0            ; return back to C
+        leave
+        ret
